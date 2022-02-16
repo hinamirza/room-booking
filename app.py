@@ -59,13 +59,6 @@ class MyAdminIndexView(AdminIndexView):
         return current_user.is_authenticated
 
 
-# class MyView(BaseView):
-#     def __init__(self, *args, **kwargs):
-#         self._default_view = True
-#         super(MyView, self).__init__(*args, **kwargs)
-#         self.admin = Admin()
-
-
 admin = Admin(app, name = 'Delight Height',template_mode='bootstrap3')  #,base_template='admin/index.html'
 admin.add_view(ControlView(Book_Now, db.session))
 admin.add_view(ControlView(User, db.session))
@@ -81,14 +74,40 @@ def hotel_booking():
         guests=request.form.get('guests')
         checkin=request.form.get('checkin')
         checkout=request.form.get('checkout')
+        
         ''' id, name, email, phone, rooms, guests, checkin, checkout'''
         entry = Book_Now(Name=name, Email=email, Phone = phone, Rooms=rooms, Guests=guests, Check_in=checkin, Check_out = checkout)
         
-        db.session.add(entry)
-        db.session.commit()
+        if entry.Check_in > entry.Check_out:
+            return "Please enter a valid checkin or checkout date"
+        else:
+            if entry.Rooms == '1':
+                result = Book_Now.query.filter_by(Rooms ='1').first()
+                if result :
+                   return "Room is booked please try booking another room!"
+                else:
+                    db.session.add(entry)
+                    db.session.commit()
+                     
+            elif entry.Rooms=='2':
+                result = Book_Now.query.filter_by(Rooms ='2').first()
+                if result :
+                    return "Room is booked please try booking another room!"
+                else:
+                    db.session.add(entry)
+                    db.session.commit() 
+            elif entry.Rooms == '3':
+                result = Book_Now.query.filter_by(Rooms ='3').first()
+                if result :
+                    return "Room is booked please try booking another room!"
+                else:
+                    db.session.add(entry)
+                    db.session.commit() 
+        
         mail.send_message('reserved room by you', sender = 'hinamirza886@gmail.com',recipients = [email],
-                            body = name+"\t"+ rooms +"\t"+ guests+"\t" + checkin+"\t" + checkout
+                            body = "Your name: "+name+"\n"+"Room No:"+ rooms +"\n"+ "No. of persons: "+guests+"\n" + "Check-in: "+checkin+"\n" + "Check-out: "+checkout
                             )
+
         if entry:
             return redirect('/admin')
     return render_template('admin/index.html')
